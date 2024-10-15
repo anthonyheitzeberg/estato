@@ -1,36 +1,53 @@
 <template>
-  <GoogleMap
-    :api-key="googleMapsApiKey"
-    style="width: 100%; height: 500px"
-    mapId="DEMO_MAP_ID"
-    :center="center"
-    :zoom="zoom"
-  >
-    <Marker
-      v-for="(house, index) in houses"
-      :key="index"
-      :options="{
-        position: house.position,
-        icon: getMarkerIcon(house.price),
-      }"
-      :pin-options="pinOptions"
-      @click="showInfo(house)"
-    />
-  </GoogleMap>
-
-  <div v-if="selectedHouse">
-    <p>Price: ₱{{ selectedHouse.price }}</p>
-    <p>
-      Location: Lat {{ selectedHouse.position.lat }}, Lng
-      {{ selectedHouse.position.lng }}
-    </p>
+  <div class="map-container">
+    <GoogleMap
+      :api-key="googleMapsApiKey"
+      style="width: 100%; height: 100%"
+      mapId="DEMO_MAP_ID"
+      :center="center"
+      :clickable-icons="false"
+      :fullscreen-control="false"
+      :keyboard-shortcuts="false"
+      :map-type-control="false"
+      :rotate-control="false"
+      :scale-control="false"
+      :streetViewControl="false"
+      :zoom="zoom"
+      :zoom-control="false"
+      @click="closeInfo"
+    >
+      <GoogleMarkerCluster>
+        <GoogleMarker
+          v-for="(house, index) in houses"
+          :key="index"
+          :options="{
+            position: house.position,
+            icon: getMarkerIcon(house.price),
+          }"
+          @click="showInfo(house)"
+        >
+        </GoogleMarker>
+        <GoogleInfoWindow
+          v-if="selectedHouse"
+          :options="{ position: center }"
+          @closeclick="closeInfo"
+        >
+          <h4>House Details</h4>
+          <p>Price: ₱{{ selectedHouse.price }}</p>
+          <p>
+            Location: Lat {{ selectedHouse.position.lat }}, Lng
+            {{ selectedHouse.position.lng }}
+          </p>
+        </GoogleInfoWindow>
+      </GoogleMarkerCluster>
+    </GoogleMap>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { GoogleMap, Marker } from 'vue3-google-map'
 import { GOOGLE_MAPS_API_KEY } from '@/config'
+import { mockDataHouses } from '@/assets/randomHouseData'
 
 type Place = {
   position: Coordinates
@@ -42,13 +59,12 @@ type Coordinates = {
   lng: number
 }
 
-const pinOptions = { background: '#FBBC04' }
 const center = ref<Coordinates>({
   lat: 9.3076, // Update to Dumaguete latitude
   lng: 123.3041, // Update to Dumaguete longitude
 })
 const googleMapsApiKey = GOOGLE_MAPS_API_KEY
-const zoom = ref(12)
+const zoom = 15
 const selectedHouse = ref<Place | null>(null)
 
 const getMarkerIcon = (price: number) => {
@@ -62,38 +78,25 @@ const getMarkerIcon = (price: number) => {
 }
 
 const showInfo = (house: Place) => {
-  if (house) {
-    console.log(house)
-    selectedHouse.value = house
+  // If the selected house is the same, close the info window
+  if (selectedHouse.value === house) {
+    closeInfo()
   } else {
-    console.error('House is not defined', house)
+    selectedHouse.value = house // Set the selected house
+    center.value = selectedHouse.value.position
   }
 }
 
-const generateRandomHouses = (num: number) => {
-  const houses: Place[] = []
-  for (let i = 0; i < num; i++) {
-    const latOffset = (Math.random() - 0.5) * 0.02 // Random offset for latitude
-    const lngOffset = (Math.random() - 0.5) * 0.02 // Random offset for longitude
-    const price = Math.floor(Math.random() * (800000 - 150000 + 1)) + 150000 // Random price between 150,000 and 800,000
-
-    houses.push({
-      position: {
-        lat: center.value.lat + latOffset,
-        lng: center.value.lng + lngOffset,
-      },
-      price,
-    })
-  }
-  return houses
+const closeInfo = () => {
+  selectedHouse.value = null
 }
 
-const houses = ref<Place[]>(generateRandomHouses(50)) // Generate 50 random houses
+const houses = ref<Place[]>(mockDataHouses) // Generate 50 random houses
 </script>
 
 <style scoped>
 .map-container {
   width: 100%;
-  height: 100%;
+  height: 90vh;
 }
 </style>

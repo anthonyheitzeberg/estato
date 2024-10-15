@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import MapComponent from './components/MapComponent.vue'
+import NavbarComponent from './components/shared/NavbarComponent.vue'
 </script>
 
 <template>
-  <MapComponent />
+  <NavbarComponent />
+  <RouterView />
 </template>
