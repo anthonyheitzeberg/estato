@@ -2,8 +2,9 @@
   <div class="map-container">
     <GoogleMap
       :api-key="googleMapsApiKey"
+      :map-id="googleMapsId"
       style="width: 100%; height: 100%"
-      mapId="DEMO_MAP_ID"
+      :disable-default-ui="true"
       :center="center"
       :clickable-icons="false"
       :fullscreen-control="false"
@@ -12,7 +13,7 @@
       :rotate-control="false"
       :scale-control="false"
       :streetViewControl="false"
-      :zoom="zoom"
+      :zoom="15"
       :zoom-control="false"
       @click="closeInfo"
     >
@@ -46,25 +47,20 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { GOOGLE_MAPS_API_KEY } from '@/config'
+import { GOOGLE_MAPS_API_KEY, GOOGLE_MAPS_ID } from '@/config'
 import { mockDataHouses } from '@/assets/randomHouseData'
 
 type Place = {
-  position: Coordinates
+  position: google.maps.LatLngLiteral
   price: number
 }
 
-type Coordinates = {
-  lat: number
-  lng: number
-}
-
-const center = ref<Coordinates>({
+const center = ref<google.maps.LatLngLiteral>({
   lat: 9.3076, // Update to Dumaguete latitude
   lng: 123.3041, // Update to Dumaguete longitude
 })
 const googleMapsApiKey = GOOGLE_MAPS_API_KEY
-const zoom = 15
+const googleMapsId = GOOGLE_MAPS_ID
 const selectedHouse = ref<Place | null>(null)
 
 const getMarkerIcon = (price: number) => {
@@ -91,7 +87,7 @@ const closeInfo = () => {
   selectedHouse.value = null
 }
 
-const houses = ref<Place[]>(mockDataHouses) // Generate 50 random houses
+const houses = ref<Place[]>(mockDataHouses)
 </script>
 
 <style scoped>
